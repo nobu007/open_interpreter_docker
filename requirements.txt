@@ -1,0 +1,7 @@
+google-generativeai
+gradio
+langchain
+numpy
+pandas
+pyperclip
+uvicorn[standard]

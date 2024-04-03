@@ -1,5 +1,8 @@
-import litellm
+from copy import deepcopy
+
 import tokentrim as tt
+
+import litellm
 
 from ...terminal_interface.utils.display_markdown_message import (
     display_markdown_message,
@@ -50,9 +53,13 @@ class Llm:
         """
 
         # Assertions
-        assert messages[0]["role"] == "system", "First message must have the role 'system'"
+        assert (
+            messages[0]["role"] == "system"
+        ), "First message must have the role 'system'"
         for msg in messages[1:]:
-            assert msg["role"] != "system", "No message after the first can have the role 'system'"
+            assert (
+                msg["role"] != "system"
+            ), "No message after the first can have the role 'system'"
 
         # Detect function support
         if self.supports_functions == None:
@@ -108,7 +115,9 @@ class Llm:
         # Trim messages
         try:
             if self.context_window and self.max_tokens:
-                trim_to_be_this_many_tokens = self.context_window - self.max_tokens - 25  # arbitrary buffer
+                trim_to_be_this_many_tokens = (
+                    self.context_window - self.max_tokens - 25
+                )  # arbitrary buffer
                 messages = tt.trim(
                     messages,
                     system_message=system_message,
@@ -123,8 +132,10 @@ class Llm:
                 )
             else:
                 try:
-                    messages = tt.trim(messages, system_message=system_message, model=self.model)
-                except:
+                    messages = tt.trim(
+                        messages, system_message=system_message, model=self.model
+                    )
+                except Exception:
                     if len(messages) == 1:
                         if self.interpreter.in_terminal_interface:
                             display_markdown_message(
@@ -148,16 +159,16 @@ Also please set `interpreter.llm.max_tokens = {max tokens per response}`.
 Continuing...
                             """
                             )
-                    messages = tt.trim(messages, system_message=system_message, max_tokens=3000)
-        except:
+                    messages = tt.trim(
+                        messages, system_message=system_message, max_tokens=3000
+                    )
+        except Exception:
             # If we're trimming messages, this won't work.
             # If we're trimming from a model we don't know, this won't work.
             # Better not to fail until `messages` is too big, just for frustrations sake, I suppose.
 
             # Reunite system message with messages
             messages = [{"role": "system", "content": system_message}] + messages
-
-            pass
 
         ## Start forming the request
 
@@ -186,11 +197,21 @@ Continuing...
             litellm.set_verbose = True
         if self.interpreter.llm_drop_params:
             litellm.drop_params = True
+        if self.interpreter.llm_modify_params:
+            litellm.modify_params = True
 
-        if self.supports_functions:
-            yield from run_function_calling_llm(self, params)
-        else:
-            yield from run_text_llm(self, params)
+        # Check message structure(first 20 char is show)
+        params_dump = deepcopy(params)
+        for i, message in enumerate(params["messages"]):
+            params_dump["messages"][i]["content"] = message["content"][:20]
+        print("params_dump=", params_dump)
+        try:
+            if self.supports_functions:
+                yield from run_function_calling_llm(self, params)
+            else:
+                yield from run_text_llm(self, params)
+        except Exception as e:
+            print("Llm.run error e=", e)
 
 
 def fixed_litellm_completions(**params):
@@ -204,6 +225,7 @@ def fixed_litellm_completions(**params):
     try:
         yield from litellm.completion(**params)
     except Exception as e:
+        print("fixed_litellm_completions the first_error e=", e)
         # Store the first error
         first_error = e
         # LiteLLM can fail if there's no API key,
@@ -219,6 +241,7 @@ def fixed_litellm_completions(**params):
 
         try:
             yield from litellm.completion(**params)
-        except:
+        except Exception as e2:
+            print("fixed_litellm_completions second_error e2=", e2)
             # If the second attempt also fails, raise the first error
             raise first_error
