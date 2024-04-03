@@ -4,9 +4,7 @@ def run_text_llm(llm, params):
     if llm.execution_instructions:
         try:
             # Add the system message
-            params["messages"][0][
-                "content"
-            ] += "\n" + llm.execution_instructions
+            params["messages"][0]["content"] += "\n" + llm.execution_instructions
         except:
             print('params["messages"][0]', params["messages"][0])
             raise
@@ -55,7 +53,7 @@ def run_text_llm(llm, params):
                 if language == "":
                     if llm.interpreter.os == False:
                         language = "python"
-                    elif llm.interpreter.os == False:
+                    else:
                         # OS mode does this frequently. Takes notes with markdown code blocks
                         language = "text"
                 else:
@@ -71,5 +69,5 @@ def run_text_llm(llm, params):
                 }
 
         # If we're not in a code block, send the output as a message
-        if not inside_code_block:
+        else:
             yield {"type": "message", "content": content}

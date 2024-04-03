@@ -20,7 +20,7 @@ class PowerShell(SubprocessLanguage):
             # On non-Windows platforms, prefer pwsh (PowerShell Core) if available, or fall back to bash
             self.start_cmd = ["pwsh"] if shutil.which("pwsh") else ["bash"]
 
-    def preprocess_code(self, code):
+    def preprocess_code(self, code, run_count):
         return preprocess_powershell(code)
 
     def line_postprocessor(self, line):

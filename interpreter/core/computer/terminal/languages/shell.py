@@ -21,7 +21,7 @@ class Shell(SubprocessLanguage):
         else:
             self.start_cmd = [os.environ.get("SHELL", "bash")]
 
-    def preprocess_code(self, code):
+    def preprocess_code(self, code, run_count):
         return preprocess_shell(code)
 
     def line_postprocessor(self, line):

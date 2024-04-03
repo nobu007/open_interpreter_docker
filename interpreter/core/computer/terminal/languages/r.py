@@ -11,7 +11,7 @@ class R(SubprocessLanguage):
         super().__init__()
         self.start_cmd = ["R", "-q", "--vanilla"]  # Start R in quiet and vanilla mode
 
-    def preprocess_code(self, code):
+    def preprocess_code(self, code, run_count):
         """
         Add active line markers
         Wrap in a tryCatch for better error handling in R

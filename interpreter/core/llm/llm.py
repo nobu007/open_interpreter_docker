@@ -1,5 +1,8 @@
-import litellm
+from copy import deepcopy
+
 import tokentrim as tt
+
+import litellm
 
 from ...terminal_interface.utils.display_markdown_message import (
     display_markdown_message,
@@ -191,8 +194,6 @@ Continuing...
             # Reunite system message with messages
             messages = [{"role": "system", "content": system_message}] + messages
 
-            pass
-
         ## Start forming the request
 
         params = {
@@ -218,6 +219,10 @@ Continuing...
             litellm.max_budget = self.max_budget
         if self.interpreter.verbose:
             litellm.set_verbose = True
+        if self.interpreter.llm_drop_params:
+            litellm.drop_params = True
+        if self.interpreter.llm_modify_params:
+            litellm.modify_params = True
 
         if self.interpreter.debug:
             print("\n\n\nOPENAI COMPATIBLE MESSAGES\n\n\n")
@@ -229,6 +234,12 @@ Continuing...
                 print("\n")
             print("\n\n\n")
             time.sleep(5)
+
+        # Check message structure(first 20 char is show)
+        params_dump = deepcopy(params)
+        for i, message in enumerate(params["messages"]):
+            params_dump["messages"][i]["content"] = message["content"][:20]
+        print("params_dump=", params_dump)
 
         if self.supports_functions:
             yield from run_function_calling_llm(self, params)
@@ -249,8 +260,10 @@ def fixed_litellm_completions(**params):
     # Run completion
     first_error = None
     try:
+        time.sleep(3)
         yield from litellm.completion(**params)
     except Exception as e:
+        print("fixed_litellm_completions the first_error e=", e)
         # Store the first error
         first_error = e
         # LiteLLM can fail if there's no API key,
@@ -265,7 +278,9 @@ def fixed_litellm_completions(**params):
         params["api_key"] = "x"
 
         try:
+            time.sleep(3)
             yield from litellm.completion(**params)
-        except:
+        except Exception as e2:
+            print("fixed_litellm_completions second_error e2=", e2)
             # If the second attempt also fails, raise the first error
             raise first_error

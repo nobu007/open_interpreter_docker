@@ -2,11 +2,25 @@
 This file defines the Interpreter class.
 It's the main file. `from interpreter import interpreter` will import an instance of this class.
 """
+
 import json
 import os
 import threading
 import time
 from datetime import datetime
+
+from gui_agent_loop_core.connector_impl.core_to_agent.connector_impl_open_interpreter import (
+    ConnectorImplOpenInterpreter,
+)
+from gui_agent_loop_core.schema.schema import (
+    GuiAgentInterpreterABC,
+    GuiAgentInterpreterChatMessage,
+    GuiAgentInterpreterChatMessages,
+    GuiAgentInterpreterChatRequest,
+    GuiAgentInterpreterChatRequestAny,
+    GuiAgentInterpreterChatRequestList,
+    GuiAgentInterpreterChatResponse,
+)
 
 from ..terminal_interface.local_setup import local_setup
 from ..terminal_interface.terminal_interface import terminal_interface
@@ -27,7 +41,7 @@ except:
     pass
 
 
-class OpenInterpreter:
+class OpenInterpreter(ConnectorImplOpenInterpreter):
     """
     This class (one instance is called an `interpreter`) is the "grand central station" of this project.
 
@@ -85,6 +99,8 @@ class OpenInterpreter:
         import_skills=False,
         multi_line=False,
         contribute_conversation=False,
+        llm_drop_params=False,
+        llm_modify_params=False,
     ):
         # State
         self.messages = [] if messages is None else messages
@@ -103,6 +119,8 @@ class OpenInterpreter:
         self.in_terminal_interface = in_terminal_interface
         self.multi_line = multi_line
         self.contribute_conversation = contribute_conversation
+        self.llm_drop_params = llm_drop_params
+        self.llm_modify_params = llm_modify_params
 
         # Loop messages
         self.force_task_completion = force_task_completion
@@ -265,7 +283,9 @@ class OpenInterpreter:
             #             )
 
             # This is where it all happens!
+            print("_streaming_chat _respond_and_store start")
             yield from self._respond_and_store()
+            print("_streaming_chat _respond_and_store end")
 
             # Save conversation if we've turned conversation_history on
             if self.conversation_history:
@@ -317,6 +337,7 @@ class OpenInterpreter:
 
         for chunk in respond(self):
             if chunk["content"] == "":
+                print("chunk=empty content")
                 continue
 
             # Handle the special "confirmation" chunk, which neither triggers a flag or creates a message

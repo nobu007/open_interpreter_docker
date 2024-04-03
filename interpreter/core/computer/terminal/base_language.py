@@ -14,7 +14,7 @@ class BaseLanguage:
     terminate (Terminates state)
     """
 
-    def run(self, code):
+    def run(self, code, run_count):
         """
         Generator that yields a dictionary in LMC format:
         {"type": "console", "format": "output", "content": "a printed statement"}

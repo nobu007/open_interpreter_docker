@@ -9,7 +9,7 @@ class HTML(BaseLanguage):
     def __init__(self):
         super().__init__()
 
-    def run(self, code):
+    def run(self, code, run_count):
         # Assistant should know what's going on
         yield {
             "type": "console",

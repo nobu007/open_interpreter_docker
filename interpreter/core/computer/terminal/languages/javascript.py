@@ -11,7 +11,7 @@ class JavaScript(SubprocessLanguage):
         super().__init__()
         self.start_cmd = ["node", "-i"]
 
-    def preprocess_code(self, code):
+    def preprocess_code(self, code, run_count):
         return preprocess_javascript(code)
 
     def line_postprocessor(self, line):
