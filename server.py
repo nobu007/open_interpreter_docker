@@ -14,10 +14,10 @@ interpreter = OpenInterpreter(
     auto_run=True,
 )
 # interpreter.llm.model = "claude-3-haiku-20240307"
-interpreter.llm.model = "anthropic/claude-3-haiku-20240307"
-# interpreter.llm.model = "openrouter/anthropic/claude-3-haiku"
+# interpreter.llm.model = "anthropic/claude-3-haiku-20240307"
+interpreter.llm.model = "openrouter/anthropic/claude-3-haiku"
 # interpreter.llm.model = "openrouter/anthropic/claude-3-haiku:beta"
-# interpreter.llm.api_base = os.getenv("API_BASE")
+interpreter.llm.api_base = os.getenv("API_BASE")
 print("api_base=", interpreter.llm.api_base)
 
 interpreter.llm.max_tokens = 2000
@@ -30,7 +30,12 @@ If you lost previous work, you should check this directory and result from files
 interpreter.llm_drop_params = True
 interpreter.llm_modify_params = True
 computer = interpreter.computer
+<<<<<<< HEAD
 computer.debug = False
 computer.verbose = False
+=======
+computer.debug = True
+computer.verbose = True
+>>>>>>> 2ba3ad04 (fix: update for docker compose with vnc)
 interpreter.llm.supports_functions = False
 server(interpreter)

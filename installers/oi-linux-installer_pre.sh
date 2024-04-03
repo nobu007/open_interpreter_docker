@@ -9,27 +9,8 @@ sleep 2
 if ! command -v rustc &> /dev/null
 then
     echo "Rust is not installed. Installing now..."
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -y | sh
 else
     echo "Rust is already installed."
 fi
 
-# Install pyenv
-curl https://pyenv.run | bash
-
-# Define pyenv location
-pyenv_root="$HOME/.pyenv/bin/pyenv"
-
-# Install specific Python version using pyenv
-$pyenv_root init
-$pyenv_root install 3.11.7 --skip-existing
-$pyenv_root shell 3.11.7
-
-
-# Unset the Python version
-$pyenv_root shell --unset
-
-echo ""
-echo "Open Interpreter has been installed. Run the following command to use it: "
-echo ""
-echo "interpreter"

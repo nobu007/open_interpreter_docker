@@ -164,6 +164,7 @@ class OpenInterpreter:
         return self.contribute_conversation and not overrides
 
     def chat(self, message=None, display=True, stream=False, blocking=True):
+        print("chat start")
         try:
             self.responding = True
             if self.anonymous_telemetry:
@@ -195,6 +196,7 @@ class OpenInterpreter:
 
             # Return new messages
             self.responding = False
+            print("chat end1")
             return self.messages[self.last_messages_count :]
 
         except GeneratorExit:
@@ -214,9 +216,11 @@ class OpenInterpreter:
                     },
                 )
 
+            print("chat end2(Exception)")
             raise
 
     def _streaming_chat(self, message=None, display=True):
+        print("_streaming_chat start")
         # Sometimes a little more code -> a much better experience!
         # Display mode actually runs interpreter.chat(display=False, stream=True) from within the terminal_interface.
         # wraps the vanilla .chat(display=False) generator in a display.
@@ -293,7 +297,9 @@ class OpenInterpreter:
                     "w",
                 ) as f:
                     json.dump(self.messages, f)
+            print("_streaming_chat end")
             return
+        print("_streaming_chat end(Exception)")
 
         raise Exception(
             "`interpreter.chat()` requires a display. Set `display=True` or pass a message into `interpreter.chat(message)`."
@@ -308,6 +314,7 @@ class OpenInterpreter:
 
         # Utility function
         def is_active_line_chunk(chunk):
+            print("_respond_and_store end1")
             return "format" in chunk and chunk["format"] == "active_line"
 
         last_flag_base = None
@@ -318,6 +325,7 @@ class OpenInterpreter:
                 break
 
             if chunk["content"] == "":
+                print("chunk=empty content")
                 continue
 
             # Handle the special "confirmation" chunk, which neither triggers a flag or creates a message
@@ -390,6 +398,7 @@ class OpenInterpreter:
         # Yield a final end flag
         if last_flag_base:
             yield {**last_flag_base, "end": True}
+        print("_respond_and_store end2")
 
     def reset(self):
         self.computer.terminate()  # Terminates all languages

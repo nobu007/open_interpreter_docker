@@ -1,10 +1,10 @@
 fastapi
-matplotlib 
-numpy 
+matplotlib
+numpy
 opencv-python
 pandas
 plyer
 pyautogui
-pyperclip 
-pywinctl 
+pyperclip
+pywinctl
 uvicorn

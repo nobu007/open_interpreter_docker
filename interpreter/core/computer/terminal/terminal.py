@@ -80,6 +80,7 @@ class Terminal:
             return self._streaming_run(language, code, display=display)
 
     def _streaming_run(self, language, code, display=False):
+        print("_streaming_run start")
         if language not in self._active_languages:
             # Get the language. Pass in self.computer *if it takes a single argument*
             # but pass in nothing if not. This makes custom languages easier to add / understand.
@@ -115,8 +116,10 @@ class Terminal:
                     and chunk.get("content")
                 ):
                     print(chunk["content"], end="")
+            print("_streaming_run end")
 
         except GeneratorExit:
+            print("_streaming_run GeneratorExit")
             self.stop()
 
     def stop(self):
