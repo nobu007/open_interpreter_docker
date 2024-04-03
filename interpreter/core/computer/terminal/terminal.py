@@ -31,14 +31,19 @@ class Terminal:
     def get_language(self, language):
         for lang in self.languages:
             if language.lower() == lang.name.lower() or (
-                hasattr(lang, "aliases") and language.lower() in (alias.lower() for alias in lang.aliases)
+                hasattr(lang, "aliases")
+                and language.lower() in (alias.lower() for alias in lang.aliases)
             ):
                 return lang
         return None
 
     def run(self, language, code, stream=False, display=False):
         if language == "python":
-            if self.computer.import_computer_api and not self.computer._has_imported_computer_api and "computer" in code:
+            if (
+                self.computer.import_computer_api
+                and not self.computer._has_imported_computer_api
+                and "computer" in code
+            ):
                 self.computer._has_imported_computer_api = True
                 # Give it access to the computer via Python
                 self.computer.run(

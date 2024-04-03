@@ -1,0 +1,6 @@
+work
+**/Dockerfile*
+**/docker-compose*
+**/.dockerignore
+**/.git
+**/.gitignore
