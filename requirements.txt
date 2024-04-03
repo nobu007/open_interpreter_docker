@@ -1,0 +1,10 @@
+fastapi
+matplotlib 
+numpy 
+opencv-python
+pandas
+plyer
+pyautogui
+pyperclip 
+pywinctl 
+uvicorn
