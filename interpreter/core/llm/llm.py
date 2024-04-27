@@ -50,13 +50,9 @@ class Llm:
         """
 
         # Assertions
-        assert (
-            messages[0]["role"] == "system"
-        ), "First message must have the role 'system'"
+        assert messages[0]["role"] == "system", "First message must have the role 'system'"
         for msg in messages[1:]:
-            assert (
-                msg["role"] != "system"
-            ), "No message after the first can have the role 'system'"
+            assert msg["role"] != "system", "No message after the first can have the role 'system'"
 
         # Detect function support
         if self.supports_functions == None:
@@ -112,9 +108,7 @@ class Llm:
         # Trim messages
         try:
             if self.context_window and self.max_tokens:
-                trim_to_be_this_many_tokens = (
-                    self.context_window - self.max_tokens - 25
-                )  # arbitrary buffer
+                trim_to_be_this_many_tokens = self.context_window - self.max_tokens - 25  # arbitrary buffer
                 messages = tt.trim(
                     messages,
                     system_message=system_message,
@@ -129,9 +123,7 @@ class Llm:
                 )
             else:
                 try:
-                    messages = tt.trim(
-                        messages, system_message=system_message, model=self.model
-                    )
+                    messages = tt.trim(messages, system_message=system_message, model=self.model)
                 except:
                     if len(messages) == 1:
                         if self.interpreter.in_terminal_interface:
@@ -156,9 +148,7 @@ Also please set `interpreter.llm.max_tokens = {max tokens per response}`.
 Continuing...
                             """
                             )
-                    messages = tt.trim(
-                        messages, system_message=system_message, max_tokens=3000
-                    )
+                    messages = tt.trim(messages, system_message=system_message, max_tokens=3000)
         except:
             # If we're trimming messages, this won't work.
             # If we're trimming from a model we don't know, this won't work.
