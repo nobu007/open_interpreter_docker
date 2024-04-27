@@ -30,7 +30,10 @@ def start_terminal_interface(interpreter):
             "nickname": "ci",
             "help_text": "custom instructions for the language model. will be appended to the system_message",
             "type": str,
-            "attribute": {"object": interpreter, "attr_name": "custom_instructions"},
+            "attribute": {
+                "object": interpreter,
+                "attr_name": "custom_instructions",
+            },
         },
         {
             "name": "system_message",
@@ -65,7 +68,10 @@ def start_terminal_interface(interpreter):
             "nickname": "t",
             "help_text": "optional temperature setting for the language model",
             "type": float,
-            "attribute": {"object": interpreter.llm, "attr_name": "temperature"},
+            "attribute": {
+                "object": interpreter.llm,
+                "attr_name": "temperature",
+            },
         },
         {
             "name": "llm_supports_vision",
@@ -73,7 +79,10 @@ def start_terminal_interface(interpreter):
             "help_text": "inform OI that your model supports vision, and can recieve vision inputs",
             "type": bool,
             "action": argparse.BooleanOptionalAction,
-            "attribute": {"object": interpreter.llm, "attr_name": "supports_vision"},
+            "attribute": {
+                "object": interpreter.llm,
+                "attr_name": "supports_vision",
+            },
         },
         {
             "name": "llm_supports_functions",
@@ -81,14 +90,20 @@ def start_terminal_interface(interpreter):
             "help_text": "inform OI that your model supports OpenAI-style functions, and can make function calls",
             "type": bool,
             "action": argparse.BooleanOptionalAction,
-            "attribute": {"object": interpreter.llm, "attr_name": "supports_functions"},
+            "attribute": {
+                "object": interpreter.llm,
+                "attr_name": "supports_functions",
+            },
         },
         {
             "name": "context_window",
             "nickname": "cw",
             "help_text": "optional context window size for the language model",
             "type": int,
-            "attribute": {"object": interpreter.llm, "attr_name": "context_window"},
+            "attribute": {
+                "object": interpreter.llm,
+                "attr_name": "context_window",
+            },
         },
         {
             "name": "max_tokens",
@@ -123,7 +138,10 @@ def start_terminal_interface(interpreter):
             "nickname": "av",
             "help_text": "optionally set the API version for your llm calls (this will override environment variables)",
             "type": str,
-            "attribute": {"object": interpreter.llm, "attr_name": "api_version"},
+            "attribute": {
+                "object": interpreter.llm,
+                "attr_name": "api_version",
+            },
         },
         {
             "name": "max_output",
@@ -137,7 +155,10 @@ def start_terminal_interface(interpreter):
             "nickname": "fc",
             "help_text": "runs OI in a loop, requiring it to admit to completing/failing task",
             "type": bool,
-            "attribute": {"object": interpreter, "attr_name": "force_task_completion"},
+            "attribute": {
+                "object": interpreter,
+                "attr_name": "force_task_completion",
+            },
         },
         {
             "name": "disable_telemetry",
@@ -145,7 +166,10 @@ def start_terminal_interface(interpreter):
             "help_text": "disables sending of basic anonymous usage stats",
             "type": bool,
             "default": False,
-            "attribute": {"object": interpreter, "attr_name": "disable_telemetry"},
+            "attribute": {
+                "object": interpreter,
+                "attr_name": "disable_telemetry",
+            },
         },
         {
             "name": "offline",
@@ -223,7 +247,11 @@ def start_terminal_interface(interpreter):
             "default": "NOT_PROVIDED",
             "nargs": "?",  # This means you can pass in nothing if you want
         },
-        {"name": "profiles", "help_text": "opens profiles directory", "type": bool},
+        {
+            "name": "profiles",
+            "help_text": "opens profiles directory",
+            "type": bool,
+        },
         {
             "name": "local_models",
             "help_text": "opens local models directory",
@@ -443,7 +471,11 @@ def set_attributes(args, arguments):
             if argument_dictionary := get_argument_dictionary(arguments, argument_name):
                 if "attribute" in argument_dictionary:
                     attr_dict = argument_dictionary["attribute"]
-                    setattr(attr_dict["object"], attr_dict["attr_name"], argument_value)
+                    setattr(
+                        attr_dict["object"],
+                        attr_dict["attr_name"],
+                        argument_value,
+                    )
 
                     if args.verbose:
                         print(
