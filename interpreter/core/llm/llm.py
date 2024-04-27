@@ -194,6 +194,8 @@ Continuing...
             litellm.max_budget = self.max_budget
         if self.interpreter.verbose:
             litellm.set_verbose = True
+        if self.interpreter.llm_drop_params:
+            litellm.drop_params = True
 
         if self.supports_functions:
             yield from run_function_calling_llm(self, params)

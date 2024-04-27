@@ -74,6 +74,7 @@ class OpenInterpreter:
         skills_path=None,
         import_skills=False,
         multi_line=False,
+        llm_drop_params=False,
     ):
         # State
         self.messages = [] if messages is None else messages
@@ -91,6 +92,7 @@ class OpenInterpreter:
         self.disable_telemetry = disable_telemetry
         self.in_terminal_interface = in_terminal_interface
         self.multi_line = multi_line
+        self.llm_drop_params = llm_drop_params
 
         # Loop messages
         self.force_task_completion = force_task_completion
