@@ -11,7 +11,7 @@ class AppleScript(SubprocessLanguage):
         super().__init__()
         self.start_cmd = [os.environ.get("SHELL", "/bin/zsh")]
 
-    def preprocess_code(self, code):
+    def preprocess_code(self, code, run_count):
         """
         Inserts an end_of_execution marker and adds active line indicators.
         """
