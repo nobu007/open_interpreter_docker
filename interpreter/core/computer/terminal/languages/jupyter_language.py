@@ -1,16 +1,16 @@
 """
-This is NOT jupyter language, this is just python. 
+This is NOT jupyter language, this is just python.
 Gotta split this out, generalize it, and move all the python additions to python.py, which imports this
 """
 
 import ast
+import logging
 import os
 import queue
 import re
 import threading
 import time
 import traceback
-import logging
 
 from jupyter_client import KernelManager
 
@@ -26,7 +26,7 @@ class JupyterLanguage(BaseLanguage):
 
     def __init__(self, computer):
         self.computer = computer
-            
+
         self.km = KernelManager(kernel_name="python3")
         self.km.start_kernel()
         self.kc = self.km.client()
@@ -50,7 +50,7 @@ class JupyterLanguage(BaseLanguage):
 import matplotlib
 matplotlib.use('{backend}')
         """.strip()
-        for _ in self.run(code):
+        for _ in self.run(code, 0):
             pass
 
         # DISABLED because it doesn't work??
@@ -65,7 +65,7 @@ matplotlib.use('{backend}')
         self.kc.stop_channels()
         self.km.shutdown_kernel()
 
-    def run(self, code):
+    def run(self, code, run_count):
         ################################################################
         ### OFFICIAL OPEN INTERPRETER GOVERNMENT ISSUE SKILL LIBRARY ###
         ################################################################
@@ -89,7 +89,7 @@ matplotlib.use('{backend}')
         self.finish_flag = False
         try:
             try:
-                preprocessed_code = self.preprocess_code(code)
+                preprocessed_code = self.preprocess_code(code, run_count)
             except:
                 # Any errors produced here are our fault.
                 # Also, for python, you don't need them! It's just for active_line and stuff. Just looks pretty.
@@ -242,8 +242,11 @@ matplotlib.use('{backend}')
     def stop(self):
         self.finish_flag = True
 
-    def preprocess_code(self, code):
-        return preprocess_python(code)
+    def preprocess_code(self, code, run_count):
+        new_code = preprocess_python(code)
+        with open(f"/app/work/main_{run_count}.py", "w", encoding="utf-8") as f:
+            f.writelines(new_code)
+        return preprocess_python(new_code)
 
 
 def preprocess_python(code):

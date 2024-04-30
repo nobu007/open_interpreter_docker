@@ -26,7 +26,7 @@ class SubprocessLanguage(BaseLanguage):
     def line_postprocessor(self, line):
         return line
 
-    def preprocess_code(self, code):
+    def preprocess_code(self, code, run_count):
         """
         This needs to insert an end_of_execution marker of some kind,
         which can be detected by detect_end_of_execution.
@@ -47,6 +47,7 @@ class SubprocessLanguage(BaseLanguage):
 
         my_env = os.environ.copy()
         my_env["PYTHONIOENCODING"] = "utf-8"
+        print("subprocess_language start_cmd=", self.start_cmd)
         self.process = subprocess.Popen(
             self.start_cmd,
             stdin=subprocess.PIPE,
@@ -70,13 +71,13 @@ class SubprocessLanguage(BaseLanguage):
             daemon=True,
         ).start()
 
-    def run(self, code):
+    def run(self, code, run_count):
         retry_count = 0
         max_retries = 3
 
         # Setup
         try:
-            code = self.preprocess_code(code)
+            code = self.preprocess_code(code, run_count)
             if not self.process:
                 self.start_process()
         except:
@@ -94,6 +95,8 @@ class SubprocessLanguage(BaseLanguage):
             self.done.clear()
 
             try:
+                # デバッグ情報としてstdinに書き込むコードを出力
+                print(f"subprocess_language code= {code}")
                 self.process.stdin.write(code + "\n")
                 self.process.stdin.flush()
                 break

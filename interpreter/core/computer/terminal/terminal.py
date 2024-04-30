@@ -27,6 +27,7 @@ class Terminal:
             React,
         ]
         self._active_languages = {}
+        self.run_count = 0
 
     def get_language(self, language):
         for lang in self.languages:
@@ -91,7 +92,8 @@ class Terminal:
             else:
                 self._active_languages[language] = lang_class()
         try:
-            for chunk in self._active_languages[language].run(code):
+            self.run_count += 1
+            for chunk in self._active_languages[language].run(code, self.run_count):
                 # self.format_to_recipient can format some messages as having a certain recipient.
                 # Here we add that to the LMC messages:
                 if chunk["type"] == "console" and chunk.get("format") == "output":
