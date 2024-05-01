@@ -2,6 +2,13 @@
 # ログファイルのパス
 LOG_FILE="/app/work/all.log"
 
+eval "$(pyenv init -)"
+
+# workaround for work dir
+echo "sudo chown -R $USER:$USER /app/work"
+sudo chown -R $USER:$USER /app/work
+pip install -r /app/work/requirements.txt
+
 # ログを出力する関数
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') $1" | tee -a "$LOG_FILE"

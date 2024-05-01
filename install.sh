@@ -1,4 +1,7 @@
 #!/bin/bash
 
-eval "$(pyenv init -)" && pip install -e .
-cd litellm; eval "$(pyenv init -)" && pip install -e .
+# This is for your task(work)
+
+eval "$(pyenv init -)"
+cd work
+pip install -e .
