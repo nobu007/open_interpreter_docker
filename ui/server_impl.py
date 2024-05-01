@@ -8,16 +8,16 @@ from message_process import process_messages_async
 
 from ui.template_engine import TemplateEngine
 
-memory = ConversationBufferWindowMemory(
-    k=10,
-    memory_key="history",
-    input_key="input",
-    output_key="output",
-    return_messages=True,
-)
-
 
 def server(interpreter, host="0.0.0.0", port=8000):
+    memory = ConversationBufferWindowMemory(
+        k=10,
+        memory_key="history",
+        input_key="input",
+        output_key="output",
+        return_messages=True,
+    )
+
     app = FastAPI()
 
     template_engine = TemplateEngine("ui/templates")

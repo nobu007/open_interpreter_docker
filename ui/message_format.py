@@ -11,16 +11,16 @@ def format_response(chunk):
     chunk_role = chunk.get("role", "")
     chunk_start = chunk.get("start", False)
     chunk_end = chunk.get("end", False)
-    print(
-        "format_response chunk_type=",
-        chunk_type,
-        ", chunk_role=",
-        chunk_role,
-        ", chunk_start=",
-        chunk_start,
-        ", chunk_end=",
-        chunk_end,
-    )
+    # print(
+    #     "format_response chunk_type=",
+    #     chunk_type,
+    #     ", chunk_role=",
+    #     chunk_role,
+    #     ", chunk_start=",
+    #     chunk_start,
+    #     ", chunk_end=",
+    #     chunk_end,
+    # )
     # Message
     if chunk_type == "message":
         response += chunk.get("content", "")
@@ -112,7 +112,7 @@ def show_data_debug_dict(indent, data):
     :param data: 表示するデータの辞書
     """
     for k, v in data.items():
-        print(f"{indent}{k}: ", end="")
+        print(f"{indent}dict[{k}]: ", end="")
         show_data_debug_iter(indent, v)
 
 
@@ -124,7 +124,7 @@ def show_data_debug_array(indent, data):
     :param data: 表示するデータの配列
     """
     for i, item in enumerate(data):
-        print(f"[{str(i)}]: ", end="")
+        print(f"{indent}array[{str(i)}]: ")
         show_data_debug_iter(indent, item)
 
 
@@ -137,4 +137,4 @@ def show_data_debug_other(indent, data):
     """
     stype = str(type(data))
     s = str(data)
-    print(s[:20] + f"[type={stype}]")
+    print(f"{indent}{s[:20]}[type={stype}]")

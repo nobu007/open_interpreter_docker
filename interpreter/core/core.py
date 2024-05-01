@@ -9,6 +9,13 @@ import threading
 import time
 from datetime import datetime
 
+from gui_agent_loop_core.schema.schema import (
+    GuiAgentInterpreterABC,
+    GuiAgentInterpreterChatMessage,
+    GuiAgentInterpreterChatMessages,
+    GuiAgentInterpreterChatResponse,
+)
+
 from ..terminal_interface.terminal_interface import terminal_interface
 from ..terminal_interface.utils.display_markdown_message import display_markdown_message
 from ..terminal_interface.utils.local_storage_path import get_storage_path
@@ -22,7 +29,7 @@ from .utils.telemetry import send_telemetry
 from .utils.truncate_output import truncate_output
 
 
-class OpenInterpreter:
+class OpenInterpreter(GuiAgentInterpreterABC):
     """
     This class (one instance is called an `interpreter`) is the "grand central station" of this project.
 
@@ -140,11 +147,12 @@ class OpenInterpreter:
         return not self.disable_telemetry and not self.offline
 
     def chat(self, message=None, display=True, stream=False, blocking=True):
-        print("chat start")
         try:
             self.responding = True
             if self.anonymous_telemetry:
-                message_type = type(message).__name__  # Only send message type, no content
+                message_type = type(
+                    message
+                ).__name__  # Only send message type, no content
                 send_telemetry(
                     "started_chat",
                     properties={
@@ -170,7 +178,6 @@ class OpenInterpreter:
 
             # Return new messages
             self.responding = False
-            print("chat end1")
             return self.messages[self.last_messages_count :]
 
         except Exception as e:
@@ -187,11 +194,56 @@ class OpenInterpreter:
                     },
                 )
 
-            print("chat end2(Exception)")
             raise
 
+    # here is added for GuiAgentInterpreterBase
+    # TODO: move to core function
+    def convert_chat_core_message(self, core_message: GuiAgentInterpreterChatMessage):
+        inner_message = {}
+        inner_message["type"] = core_message.type
+        inner_message["role"] = core_message.role
+        inner_message["content"] = core_message.content
+        return inner_message
+
+    # here is added for GuiAgentInterpreterBase
+    # TODO: move to core function
+    def convert_chat_core_message_list(
+        self, core_message_list: GuiAgentInterpreterChatMessages
+    ):
+        inner_message_list = []
+        for core_message in core_message_list:
+            inner_message = self.convert_chat_core_message(core_message)
+            inner_message_list.append(inner_message)
+        return inner_message_list
+
+    # here is added for GuiAgentInterpreterBase
+    # TODO: move to core function
+    def chat_core(
+        self,
+        message: GuiAgentInterpreterChatMessages,
+        display=True,
+        stream=False,
+        blocking=True,
+    ):
+        if not isinstance(message, list):
+            message = [message]
+        inner_message_list = self.convert_chat_core_message_list(message)
+
+        response = self.chat(inner_message_list, display, stream, blocking)
+        print("chat_core response=", response)
+
+        for chunk in response:
+            response_final = GuiAgentInterpreterChatResponse()
+            response_final.type = chunk.get("type", "")
+            response_final.role = chunk.get("role", "")
+            response_final.content = chunk.get("content", "")
+            response_final.start = chunk.get("start", False)
+            response_final.end = chunk.get("end", False)
+            response_final.code = chunk.get("code", "")
+            response_final.format = chunk.get("format", "")
+            yield response_final
+
     def _streaming_chat(self, message=None, display=True):
-        print("_streaming_chat start")
         # Sometimes a little more code -> a much better experience!
         # Display mode actually runs interpreter.chat(display=False, stream=True) from within the terminal_interface.
         # wraps the vanilla .chat(display=False) generator in a display.
@@ -213,7 +265,9 @@ class OpenInterpreter:
                 self.messages.append(message)
             # String (we construct a user message dict)
             elif isinstance(message, str):
-                self.messages.append({"role": "user", "type": "message", "content": message})
+                self.messages.append(
+                    {"role": "user", "type": "message", "content": message}
+                )
             # List (this is like the OpenAI API)
             elif isinstance(message, list):
                 self.messages = message
@@ -234,7 +288,9 @@ class OpenInterpreter:
             #             )
 
             # This is where it all happens!
+            print("_streaming_chat _respond_and_store start")
             yield from self._respond_and_store()
+            print("_streaming_chat _respond_and_store end")
 
             # Save conversation if we've turned conversation_history on
             if self.conversation_history:
@@ -251,20 +307,22 @@ class OpenInterpreter:
                         first_few_words = first_few_words.replace(char, "")
 
                     date = datetime.now().strftime("%B_%d_%Y_%H-%M-%S")
-                    self.conversation_filename = "__".join([first_few_words, date]) + ".json"
+                    self.conversation_filename = (
+                        "__".join([first_few_words, date]) + ".json"
+                    )
 
                 # Check if the directory exists, if not, create it
                 if not os.path.exists(self.conversation_history_path):
                     os.makedirs(self.conversation_history_path)
                 # Write or overwrite the file
                 with open(
-                    os.path.join(self.conversation_history_path, self.conversation_filename),
+                    os.path.join(
+                        self.conversation_history_path, self.conversation_filename
+                    ),
                     "w",
                 ) as f:
                     json.dump(self.messages, f)
-            print("_streaming_chat end")
             return
-        print("_streaming_chat end(Exception)")
 
         raise Exception(
             "`interpreter.chat()` requires a display. Set `display=True` or pass a message into `interpreter.chat(message)`."
@@ -275,11 +333,9 @@ class OpenInterpreter:
         Pulls from the respond stream, adding delimiters. Some things, like active_line, console, confirmation... these act specially.
         Also assembles new messages and adds them to `self.messages`.
         """
-        print("_respond_and_store start")
 
         # Utility function
         def is_active_line_chunk(chunk):
-            print("_respond_and_store end1")
             return "format" in chunk and chunk["format"] == "active_line"
 
         last_flag_base = None
@@ -317,7 +373,10 @@ class OpenInterpreter:
                 and last_flag_base["type"] == chunk["type"]
                 and (
                     "format" not in last_flag_base
-                    or ("format" in chunk and chunk["format"] == last_flag_base["format"])
+                    or (
+                        "format" in chunk
+                        and chunk["format"] == last_flag_base["format"]
+                    )
                 )
             ):
                 # If they match, append the chunk's content to the current message's content
@@ -346,12 +405,13 @@ class OpenInterpreter:
 
             # Truncate output if it's console output
             if chunk["type"] == "console" and chunk["format"] == "output":
-                self.messages[-1]["content"] = truncate_output(self.messages[-1]["content"], self.max_output)
+                self.messages[-1]["content"] = truncate_output(
+                    self.messages[-1]["content"], self.max_output
+                )
 
         # Yield a final end flag
         if last_flag_base:
             yield {**last_flag_base, "end": True}
-        print("_respond_and_store end2")
 
     def reset(self):
         self.computer.terminate()  # Terminates all languages

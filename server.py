@@ -1,9 +1,7 @@
 from dotenv import load_dotenv
+from gui_agent_loop_core.gui_agent_loop_core import GuiAgentLoopCore
 
 from interpreter.core.core import OpenInterpreter
-
-# from ui.server_impl import server
-from ui.server_impl_gradio import server
 
 # Load the users .env file into environment variables
 load_dotenv(verbose=True, override=False)
@@ -18,7 +16,7 @@ load_dotenv(verbose=True, override=False)
 #               <python code in system_message is run() via render_message() before llm>
 #                    If python code exist in message, respond() -> render_message() -> computer.run() before llm.
 #               <response sequence(use computer)>
-#                   _respond_and_store() -> respond() -> computer.run()
+#                   _respond_and_store() -> respond() -> computer.run() -> terminal._streaming_run()
 #           computer: core functions like os, files, etc.
 #           os: run shell command via computer.run()
 #           terminal: run python command via computer.run()
@@ -36,27 +34,40 @@ load_dotenv(verbose=True, override=False)
 interpreter = OpenInterpreter(
     auto_run=True,
 )
-interpreter.llm.model = "anthropic/claude-3-haiku-20240307"
+# interpreter.llm.model = "anthropic/claude-3-haiku-20240307"
 # interpreter.llm.model = "openrouter/anthropic/claude-3-haiku"
+# interpreter.llm.model = "gemini/gemini-pro"
+interpreter.llm.model = "gemini/gemini-1.5-pro-latest"
 print("api_base=", interpreter.llm.api_base)
 
 interpreter.verbose = False
-interpreter.sync_computer = False
+interpreter.sync_computer = True
 interpreter.system_message += """
-Your workdir is "/app/work". You should save any input and output files in this directory.
-If you lost previous work, you should check this directory and result from files.
+Please use "/app/work". This is permanent place after reboot computer.
+  /app/work/python: your python code.
+  /app/work/input: input files for python.
+  /app/work/output: output files for python.
+You should save any important python source and input and output files here.
+If you lost previous work, you should check here and resume from the files.
+
+###IMPORTANT!!##
+Put created python with main logic under "/app/work/python/main.py" for every time.
+###IMPORTANT!!##
 """
 interpreter.llm_drop_params = True
 interpreter.llm_modify_params = True
 
 # llm(litellm)
 llm = interpreter.llm
-llm.max_tokens = 2000
+llm.max_tokens = 4096
+llm.context_window = 20000
 
 # computer
 computer = interpreter.computer
-computer.debug = True
-computer.verbose = True
+computer.debug = False
+computer.verbose = False
 computer.save_skills = True
 interpreter.llm.supports_functions = False
-server(interpreter)
+
+core = GuiAgentLoopCore()
+core.launch_server(interpreter)
