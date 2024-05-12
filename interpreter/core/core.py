@@ -9,10 +9,16 @@ import threading
 import time
 from datetime import datetime
 
+from gui_agent_loop_core.connector_impl.core_to_agent.connector_impl_open_interpreter import (
+    ConnectorImplOpenInterpreter,
+)
 from gui_agent_loop_core.schema.schema import (
     GuiAgentInterpreterABC,
     GuiAgentInterpreterChatMessage,
     GuiAgentInterpreterChatMessages,
+    GuiAgentInterpreterChatRequest,
+    GuiAgentInterpreterChatRequestAny,
+    GuiAgentInterpreterChatRequestList,
     GuiAgentInterpreterChatResponse,
 )
 
@@ -29,7 +35,7 @@ from .utils.telemetry import send_telemetry
 from .utils.truncate_output import truncate_output
 
 
-class OpenInterpreter(GuiAgentInterpreterABC):
+class OpenInterpreter(ConnectorImplOpenInterpreter):
     """
     This class (one instance is called an `interpreter`) is the "grand central station" of this project.
 
@@ -222,53 +228,6 @@ class OpenInterpreter(GuiAgentInterpreterABC):
                 )
 
             raise
-
-    # here is added for GuiAgentInterpreterBase
-    # TODO: move to core function
-    def convert_chat_core_message(self, core_message: GuiAgentInterpreterChatMessage):
-        inner_message = {}
-        inner_message["type"] = core_message.type
-        inner_message["role"] = core_message.role
-        inner_message["content"] = core_message.content
-        return inner_message
-
-    # here is added for GuiAgentInterpreterBase
-    # TODO: move to core function
-    def convert_chat_core_message_list(
-        self, core_message_list: GuiAgentInterpreterChatMessages
-    ):
-        inner_message_list = []
-        for core_message in core_message_list:
-            inner_message = self.convert_chat_core_message(core_message)
-            inner_message_list.append(inner_message)
-        return inner_message_list
-
-    # here is added for GuiAgentInterpreterBase
-    # TODO: move to core function
-    def chat_core(
-        self,
-        message: GuiAgentInterpreterChatMessages,
-        display=True,
-        stream=False,
-        blocking=True,
-    ):
-        if not isinstance(message, list):
-            message = [message]
-        inner_message_list = self.convert_chat_core_message_list(message)
-
-        response = self.chat(inner_message_list, display, stream, blocking)
-        print("chat_core response=", response)
-
-        for chunk in response:
-            response_final = GuiAgentInterpreterChatResponse()
-            response_final.type = chunk.get("type", "")
-            response_final.role = chunk.get("role", "")
-            response_final.content = chunk.get("content", "")
-            response_final.start = chunk.get("start", False)
-            response_final.end = chunk.get("end", False)
-            response_final.code = chunk.get("code", "")
-            response_final.format = chunk.get("format", "")
-            yield response_final
 
     def _streaming_chat(self, message=None, display=True):
         # Sometimes a little more code -> a much better experience!

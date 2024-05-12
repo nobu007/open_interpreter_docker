@@ -38,6 +38,7 @@ interpreter = OpenInterpreter(
 # interpreter.llm.model = "openrouter/anthropic/claude-3-haiku"
 # interpreter.llm.model = "gemini/gemini-pro"
 interpreter.llm.model = "gemini/gemini-1.5-pro-latest"
+# interpreter.llm.model = "gemini/gemini-1.5-pro"  # not working at 2024/05/06
 print("api_base=", interpreter.llm.api_base)
 
 interpreter.verbose = False
