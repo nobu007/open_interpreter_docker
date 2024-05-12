@@ -378,6 +378,7 @@ def fixed_litellm_completions(**params):
     # Run completion
     first_error = None
     try:
+        time.sleep(3)
         yield from litellm.completion(**params)
     except Exception as e:
         print("fixed_litellm_completions the first_error e=", e)
@@ -395,6 +396,7 @@ def fixed_litellm_completions(**params):
         params["api_key"] = "x"
 
         try:
+            time.sleep(3)
             yield from litellm.completion(**params)
         except Exception as e2:
             print("fixed_litellm_completions second_error e2=", e2)
